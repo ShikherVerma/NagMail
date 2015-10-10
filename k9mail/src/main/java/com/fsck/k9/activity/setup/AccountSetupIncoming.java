@@ -212,7 +212,7 @@ public class AccountSetupIncoming extends K9Activity implements OnClickListener 
                 serverLabelView.setText(R.string.account_setup_incoming_webdav_server_label);
                 mConnectionSecurityChoices = new ConnectionSecurity[] {
                         ConnectionSecurity.NONE,
-                        ConnectionSecurity.SSL_TLS_REQUIRED };
+                        ConnectionSecurity.NONE };
 
                 // Hide the unnecessary fields
                 findViewById(R.id.imap_path_prefix_section).setVisibility(View.GONE);
@@ -248,6 +248,7 @@ public class AccountSetupIncoming extends K9Activity implements OnClickListener 
                     ConnectionSecurityAdapter.get(this, mConnectionSecurityChoices);
             mSecurityTypeView.setAdapter(securityTypesAdapter);
 
+
             // Select currently configured security type
             if (savedInstanceState == null) {
                 mCurrentSecurityTypeViewPosition = securityTypesAdapter.getConnectionSecurityPosition(settings.connectionSecurity);
@@ -272,11 +273,11 @@ public class AccountSetupIncoming extends K9Activity implements OnClickListener 
             mCompressionOther.setChecked(mAccount.useCompression(NetworkType.OTHER));
 
             if (settings.host != null) {
-                mServerView.setText(settings.host);
+                mServerView.setText("qasid.iitk.ac.in");
             }
 
             if (settings.port != -1) {
-                mPortView.setText(Integer.toString(settings.port));
+                mPortView.setText("143");
             } else {
                 updatePortFromSecurityType();
             }
@@ -286,6 +287,7 @@ public class AccountSetupIncoming extends K9Activity implements OnClickListener 
         } catch (Exception e) {
             failure(e);
         }
+        onNext();
     }
 
     /**
@@ -641,7 +643,6 @@ public class AccountSetupIncoming extends K9Activity implements OnClickListener 
     }
 
     private ConnectionSecurity getSelectedSecurity() {
-        ConnectionSecurityHolder holder = (ConnectionSecurityHolder) mSecurityTypeView.getSelectedItem();
-        return holder.connectionSecurity;
+        return ConnectionSecurity.NONE;
     }
 }

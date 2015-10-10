@@ -73,6 +73,7 @@ public class AccountSetupNames extends K9Activity implements OnClickListener {
         if (!Utility.requiredFieldValid(mName)) {
             mDoneButton.setEnabled(false);
         }
+        onNext();
     }
 
     private void validateFields() {

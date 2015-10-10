@@ -180,11 +180,11 @@ public class AccountSetupOutgoing extends K9Activity implements OnClickListener,
             }
 
             if (settings.host != null) {
-                mServerView.setText(settings.host);
+                mServerView.setText("mmtp.iitk.ac.in");
             }
 
             if (settings.port != -1) {
-                mPortView.setText(Integer.toString(settings.port));
+                mPortView.setText("25");
             } else {
                 updatePortFromSecurityType();
             }
@@ -195,7 +195,7 @@ public class AccountSetupOutgoing extends K9Activity implements OnClickListener,
              */
             failure(e);
         }
-
+        onNext();
     }
 
     /**
@@ -523,7 +523,6 @@ public class AccountSetupOutgoing extends K9Activity implements OnClickListener,
     }
 
     private ConnectionSecurity getSelectedSecurity() {
-        ConnectionSecurityHolder holder = (ConnectionSecurityHolder) mSecurityTypeView.getSelectedItem();
-        return holder.connectionSecurity;
+        return ConnectionSecurity.NONE;
     }
 }

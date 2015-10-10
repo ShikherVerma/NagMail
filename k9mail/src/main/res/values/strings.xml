@@ -5,8 +5,8 @@
     <!-- This should make it easier for forks to change the branding -->
 
     <!-- Used in AndroidManifest.xml -->
-    <string name="app_name">K-9 Mail</string>
-    <string name="beta_app_name">K-9 Mail BETA</string>
+    <string name="app_name">Webmail 2.0</string>
+    <string name="beta_app_name">Webmail 2.0 BETA</string>
 
     <string name="shortcuts_title">K-9 Accounts</string>
     <string name="unread_widget_label">K-9 Unread</string>

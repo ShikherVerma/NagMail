@@ -42,10 +42,17 @@ public class AccountSetupAccountType extends K9Activity implements OnClickListen
         findViewById(R.id.pop).setOnClickListener(this);
         findViewById(R.id.imap).setOnClickListener(this);
         findViewById(R.id.webdav).setOnClickListener(this);
-
         String accountUuid = getIntent().getStringExtra(EXTRA_ACCOUNT);
         mAccount = Preferences.getPreferences(this).getAccount(accountUuid);
         mMakeDefault = getIntent().getBooleanExtra(EXTRA_MAKE_DEFAULT, false);
+        try {
+            setupStoreAndSmtpTransport("imap+ssl+");
+            AccountSetupIncoming.actionIncomingSettings(this, mAccount, mMakeDefault);
+            finish();
+        } catch (URISyntaxException e) {
+            Log.wtf("qwe","onceate");
+            e.printStackTrace();
+        }
     }
 
     private void setupStoreAndSmtpTransport(String schemePrefix) throws URISyntaxException {
@@ -91,6 +98,7 @@ public class AccountSetupAccountType extends K9Activity implements OnClickListen
                 }
                 case R.id.imap: {
                     setupStoreAndSmtpTransport("imap+ssl+");
+                    Log.wtf("qwe","onclick");
                     break;
                 }
                 case R.id.webdav: {

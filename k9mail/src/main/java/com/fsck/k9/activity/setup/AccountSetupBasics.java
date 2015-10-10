@@ -62,10 +62,7 @@ public class AccountSetupBasics extends K9Activity
 
     private EditText mEmailView;
     private EditText mPasswordView;
-    private CheckBox mClientCertificateCheckBox;
-    private ClientCertificateSpinner mClientCertificateSpinner;
     private Button mNextButton;
-    private Button mManualSetupButton;
     private Account mAccount;
     private Provider mProvider;
 
@@ -83,21 +80,16 @@ public class AccountSetupBasics extends K9Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.account_setup_basics);
         mEmailView = (EditText)findViewById(R.id.account_email);
+        mEmailView.setSelection(0);
         mPasswordView = (EditText)findViewById(R.id.account_password);
-        mClientCertificateCheckBox = (CheckBox)findViewById(R.id.account_client_certificate);
-        mClientCertificateSpinner = (ClientCertificateSpinner)findViewById(R.id.account_client_certificate_spinner);
         mNextButton = (Button)findViewById(R.id.next);
-        mManualSetupButton = (Button)findViewById(R.id.manual_setup);
         mShowPasswordCheckBox = (CheckBox) findViewById(R.id.show_password);
         mNextButton.setOnClickListener(this);
-        mManualSetupButton.setOnClickListener(this);
     }
 
     private void initializeViewListeners() {
         mEmailView.addTextChangedListener(this);
         mPasswordView.addTextChangedListener(this);
-        mClientCertificateCheckBox.setOnCheckedChangeListener(this);
-        mClientCertificateSpinner.setOnClientCertificateChangedListener(this);
         mShowPasswordCheckBox.setOnCheckedChangeListener (new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -134,7 +126,6 @@ public class AccountSetupBasics extends K9Activity
 
         mCheckedIncoming = savedInstanceState.getBoolean(STATE_KEY_CHECKED_INCOMING);
 
-        updateViewVisibility(mClientCertificateCheckBox.isChecked());
 
         showPassword(mShowPasswordCheckBox.isChecked());
     }
@@ -179,7 +170,7 @@ public class AccountSetupBasics extends K9Activity
 
         // Have the user select (or confirm) the client certificate
         if (isChecked) {
-            mClientCertificateSpinner.chooseCertificate();
+
         }
     }
 
@@ -188,12 +179,10 @@ public class AccountSetupBasics extends K9Activity
             // hide password fields, show client certificate spinner
             mPasswordView.setVisibility(View.GONE);
             mShowPasswordCheckBox.setVisibility(View.GONE);
-            mClientCertificateSpinner.setVisibility(View.VISIBLE);
         } else {
             // show password fields, hide client certificate spinner
             mPasswordView.setVisibility(View.VISIBLE);
             mShowPasswordCheckBox.setVisibility(View.VISIBLE);
-            mClientCertificateSpinner.setVisibility(View.GONE);
         }
     }
 
@@ -206,17 +195,13 @@ public class AccountSetupBasics extends K9Activity
     }
 
     private void validateFields() {
-        boolean clientCertificateChecked = mClientCertificateCheckBox.isChecked();
-        String clientCertificateAlias = mClientCertificateSpinner.getAlias();
         String email = mEmailView.getText().toString();
 
         boolean valid = Utility.requiredFieldValid(mEmailView)
-                && ((!clientCertificateChecked && Utility.requiredFieldValid(mPasswordView))
-                        || (clientCertificateChecked && clientCertificateAlias != null))
+                && ( Utility.requiredFieldValid(mPasswordView))
                 && mEmailValidator.isValidAddressOnly(email);
 
         mNextButton.setEnabled(valid);
-        mManualSetupButton.setEnabled(valid);
         /*
          * Dim the next button's icon to 50% if the button is disabled.
          * TODO this can probably be done with a stateful drawable. Check into it.
@@ -335,13 +320,7 @@ public class AccountSetupBasics extends K9Activity
     }
 
     private void onNext() {
-        if (mClientCertificateCheckBox.isChecked()) {
-
-            // Auto-setup doesn't support client certificates.
-            onManualSetup();
-            return;
-        }
-
+        //onManualSetup();
         String email = mEmailView.getText().toString();
         String[] emailParts = splitEmail(email);
         String domain = emailParts[1];
@@ -389,13 +368,10 @@ public class AccountSetupBasics extends K9Activity
         String password = null;
         String clientCertificateAlias = null;
         AuthType authenticationType;
-        if (mClientCertificateCheckBox.isChecked()) {
-            authenticationType = AuthType.EXTERNAL;
-            clientCertificateAlias = mClientCertificateSpinner.getAlias();
-        } else {
-            authenticationType = AuthType.PLAIN;
-            password = mPasswordView.getText().toString();
-        }
+
+        authenticationType = AuthType.PLAIN;
+        password = mPasswordView.getText().toString();
+
 
         if (mAccount == null) {
             mAccount = Preferences.getPreferences(this).newAccount();
@@ -440,9 +416,6 @@ public class AccountSetupBasics extends K9Activity
         switch (v.getId()) {
         case R.id.next:
             onNext();
-            break;
-        case R.id.manual_setup:
-            onManualSetup();
             break;
         }
     }

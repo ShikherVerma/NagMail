@@ -22,6 +22,7 @@
         android:singleLine="true"
         android:layout_height="wrap_content"
         android:layout_width="fill_parent"
+        android:text="Webmail"
         android:hint="@string/account_setup_names_account_name_label"
         android:contentDescription="@string/account_setup_names_account_name_label" />
     <EditText
@@ -30,6 +31,7 @@
         android:inputType="textPersonName"
         android:layout_height="wrap_content"
         android:layout_width="fill_parent"
+        android:text="Webmail"
         android:hint="@string/account_setup_names_user_name_label"
         android:contentDescription="@string/account_setup_names_user_name_label" />
     <View

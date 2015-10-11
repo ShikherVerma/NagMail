@@ -1,22 +1,29 @@
 package com.fsck.k9.ui.messageview;
 
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Locale;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.LoaderManager;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.app.PendingIntent;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.Loader;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.CalendarContract;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
@@ -55,6 +62,14 @@ import com.fsck.k9.view.MessageHeader;
 
 public class MessageViewFragment extends Fragment implements ConfirmationDialogFragmentListener,
         AttachmentViewCallback, OpenPgpHeaderViewCallback, MessageCryptoCallback {
+
+    private long mGoogleCalendarNumber = -1;
+
+    // The indices for the projection array above.
+    private static final int PROJECTION_ID_INDEX = 0;
+    private static final int PROJECTION_ACCOUNT_NAME_INDEX = 1;
+    private static final int PROJECTION_DISPLAY_NAME_INDEX = 2;
+    private static final int PROJECTION_OWNER_ACCOUNT_INDEX = 3;
 
     private static final String ARG_REFERENCE = "reference";
 
@@ -127,13 +142,51 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.wtf("qwe", "mvf started");
 
         // This fragments adds options to the action bar
         setHasOptionsMenu(true);
+        // Run query
+        Cursor cur = null;
+        ContentResolver cr = getActivity().getContentResolver();
+        Uri uri = CalendarContract.Calendars.CONTENT_URI;
+        String selection = "(" + CalendarContract.Calendars.ACCOUNT_TYPE + " = ?)";
+        String[] selectionArgs = new String[]{"com.google"};
+        // Submit the query and get a Cursor object back.
+        cur = cr.query(uri, EVENT_PROJECTION, selection, selectionArgs, null);
+        Log.i("qwe", " attempting to read calendar");
+        while (cur.moveToNext())
+        {
+            long calID = 0;
+            String displayName = null;
+            String accountName = null;
+            String ownerName = null;
 
+            // Get the field values
+            calID = cur.getLong(PROJECTION_ID_INDEX);
+            displayName = cur.getString(PROJECTION_DISPLAY_NAME_INDEX);
+            accountName = cur.getString(PROJECTION_ACCOUNT_NAME_INDEX);
+            ownerName = cur.getString(PROJECTION_OWNER_ACCOUNT_INDEX);
+            Log.i("qwe", " data : " + calID + "  " + accountName + "  " + displayName + "  " + ownerName);
+            if (mGoogleCalendarNumber == -1)
+            {
+                Log.i("qwe", " calendar id is " + calID );
+                mGoogleCalendarNumber = calID;
+            }
+        }
+        cur.close();
         mController = MessagingController.getInstance(getActivity().getApplication());
         mInitialized = true;
     }
+
+    // Projection array. Creating indices for this array instead of doing
+    // dynamic lookups improves performance.
+    public static final String[] EVENT_PROJECTION = new String[]{
+      CalendarContract.Calendars._ID,                           // 0
+      CalendarContract.Calendars.ACCOUNT_NAME,                  // 1
+      CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,         // 2
+      CalendarContract.Calendars.OWNER_ACCOUNT                  // 3
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -162,7 +215,6 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
         });
 
         mFragmentListener.messageHeaderViewAvailable(mMessageView.getMessageHeaderView());
-
         return view;
     }
 
@@ -281,8 +333,92 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
         } catch (MessagingException e) {
             Log.e(K9.LOG_TAG, "Error while trying to display message", e);
         }
+        startDialogBox("test", "testing testing 123 123", 10, 11, 11, 7, 00, 9, 00);
     }
 
+    public void startDialogBox(final String name, final String description, final int month, final int sdate, final int edate, final int shour, final int sminute, final int ehour, final int eminute)
+    {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+
+        // set title
+        alertDialogBuilder.setTitle("Add to Calendar");
+
+        // set dialog message
+        alertDialogBuilder
+          .setMessage("This seems like a event. Should I add it to Calendar?")
+          .setCancelable(false)
+          .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
+              public void onClick(DialogInterface dialog,int id) {
+                  Log.wtf("qwe", "calling calendar chutiyapa");
+                  calendarChutiyapa(name, description, month, sdate, edate, shour, sminute, ehour, eminute);
+              }
+          })
+          .setNegativeButton("No",new DialogInterface.OnClickListener() {
+              public void onClick(DialogInterface dialog,int id) {
+                  // if this button is clicked, just close
+                  // the dialog box and do nothing
+                  dialog.cancel();
+              }
+          });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+    }
+    public void calendarChutiyapa(String name, String description, int month, int sdate, int edate, int shour, int sminute, int ehour, int eminute)
+    {
+        //TODO : REMOBE TIS SHIT
+        if (mGoogleCalendarNumber != -1)
+        {
+            long startMillis = 0;
+            long endMillis = 0;
+            Calendar beginTime = Calendar.getInstance();
+            beginTime.set(2015,month - 1 , sdate, shour, sminute);
+            Log.i("qwe", month + "  " + sdate + "  " + shour + "  " + sminute);
+            startMillis = beginTime.getTimeInMillis();
+            Log.i("qwe", month  + "  " + edate + "  " + ehour + "  " + eminute);
+            Calendar endTime = Calendar.getInstance();
+            endTime.set(2015 , month - 1, edate, ehour, eminute);
+            endMillis = endTime.getTimeInMillis();
+
+            ContentResolver cr = getActivity().getContentResolver();
+            ContentValues values = new ContentValues();
+            values.put(CalendarContract.Events.DTSTART, startMillis);
+            values.put(CalendarContract.Events.DTEND, endMillis);
+            values.put(CalendarContract.Events.TITLE, name);
+            values.put(CalendarContract.Events.DESCRIPTION, description);
+            values.put(CalendarContract.Events.CALENDAR_ID, mGoogleCalendarNumber);
+            values.put(CalendarContract.Events.EVENT_TIMEZONE, "Asia/Calcutta");
+            Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
+            // get the event ID that is the last element in the Uri
+            long eventID = Long.parseLong(uri.getLastPathSegment());
+            cr = getActivity().getContentResolver();
+            values = new ContentValues();
+            values.put(CalendarContract.Reminders.MINUTES, 30);
+            values.put(CalendarContract.Reminders.EVENT_ID, eventID);
+            values.put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT);
+            uri = cr.insert(CalendarContract.Reminders.CONTENT_URI, values);
+            Toast.makeText(getActivity(), "Event added to Google Calendar", Toast.LENGTH_SHORT).show();
+        } else
+        {
+            Calendar beginTime = Calendar.getInstance();
+            beginTime.set(2015, month - 1, sdate, shour, sminute);
+            Log.i("qwe", month + "  " + sdate + "  " + shour + "  " + sminute);
+            Log.i("qwe", month + "  " + edate + "  " + ehour + "  " + eminute);
+            Calendar endTime = Calendar.getInstance();
+            endTime.set(2015 , month - 1, edate, ehour, eminute);
+            Intent intent = new Intent(Intent.ACTION_INSERT)
+              .setData(CalendarContract.Events.CONTENT_URI)
+              .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, beginTime.getTimeInMillis())
+              .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endTime.getTimeInMillis())
+              .putExtra(CalendarContract.Events.TITLE, name)
+              .putExtra(CalendarContract.Events.ALLOWED_REMINDERS, 1)
+              .putExtra(CalendarContract.Events.DESCRIPTION, description);
+            startActivity(intent);
+        }
+    }
     private void displayMessageHeader(LocalMessage message) {
         mMessageView.setHeaders(message, mAccount);
         displayMessageSubject(getSubjectForMessage(message));

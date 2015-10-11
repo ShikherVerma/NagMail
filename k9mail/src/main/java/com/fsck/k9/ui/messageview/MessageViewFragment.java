@@ -333,7 +333,31 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
         } catch (MessagingException e) {
             Log.e(K9.LOG_TAG, "Error while trying to display message", e);
         }
-        startDialogBox("test", "testing testing 123 123", 10, 11, 11, 7, 00, 9, 00);
+        try {
+            Log.wtf("qwe", "calling calendar chutiyapa");
+            String str = messageViewInfo.message.getPreview();
+            Log.wtf("qwe", str);
+            if (str.indexOf("Venue :") != -1) {
+                String venue = str.substring(str.indexOf("Venue :") + 8, str.indexOf("Venue :") + 18);
+                Log.wtf("qwe", venue);
+                if (str.indexOf("Date :") != -1) {
+                    int date = (int) Integer.parseInt(str.substring(str.indexOf("Date :") + 7, str.indexOf("/")));
+                    Log.wtf("qwe", date + "");
+                    if (str.indexOf("Time :") != -1) {
+                        String time = str.substring(str.indexOf("Time :") + 7, str.indexOf("Time :") + 11);
+                        Log.wtf("qwe", time + "");
+                        int startHour = Integer.parseInt(time.split(":")[0]);
+                        Log.wtf("qwe", startHour + "");
+                        int startMinute = Integer.parseInt(time.split(":")[1]);
+                        Log.wtf("qwe", startMinute + "");
+                        startDialogBox(messageViewInfo.message.getSubject(),"venue for the event is " + venue , 10, date, date, startHour, startMinute, startHour+1, startMinute);
+                    }
+                }
+            }
+        } catch(RuntimeException ex) {
+            throw ex;
+        } catch(Exception ex) {
+        }
     }
 
     public void startDialogBox(final String name, final String description, final int month, final int sdate, final int edate, final int shour, final int sminute, final int ehour, final int eminute)

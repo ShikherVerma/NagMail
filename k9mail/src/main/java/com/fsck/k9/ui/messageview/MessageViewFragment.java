@@ -142,7 +142,7 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
                 K9.getK9ThemeResourceId(K9.getK9MessageViewTheme()));
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         View view = layoutInflater.inflate(R.layout.message, container, false);
-
+        Log.wtf("qwe","mvf started");
         mMessageView = (MessageTopView) view.findViewById(R.id.message_view);
         mMessageView.setAttachmentCallback(this);
         mMessageView.setOpenPgpHeaderViewCallback(this);
@@ -275,6 +275,8 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
     private void showMessage(MessageViewInfo messageViewInfo) {
         try {
             mMessageView.setMessage(mAccount, messageViewInfo);
+            Log.wtf("qwe", messageViewInfo.message.getPreview());
+            Log.wtf("qwe",messageViewInfo.message.getSubject());
             mMessageView.setShowDownloadButton(mMessage);
         } catch (MessagingException e) {
             Log.e(K9.LOG_TAG, "Error while trying to display message", e);

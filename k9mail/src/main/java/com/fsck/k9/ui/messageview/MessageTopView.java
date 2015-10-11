@@ -202,7 +202,8 @@ public class MessageTopView extends LinearLayout implements ShowPicturesControll
         if (from == null || from.length == 0) {
             return null;
         }
-
+        String s = message.getSubject();
+        Log.wtf("qwe",s);
         return from[0].getAddress();
     }
 }

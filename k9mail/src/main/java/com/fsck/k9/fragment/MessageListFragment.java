@@ -551,6 +551,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         public void openMessage(MessageReference messageReference) {
             android.os.Message msg = android.os.Message.obtain(this, ACTION_OPEN_MESSAGE,
                     messageReference);
+            Log.wtf("qwe","open msg");
             sendMessage(msg);
         }
 
@@ -804,7 +805,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         mPreviewLines = K9.messageListPreviewLines();
         mCheckboxes = K9.messageListCheckboxes();
         mStars = K9.messageListStars();
-
+        Log.wtf("qwe","mlistf started");
         if (K9.showContactPicture()) {
             mContactsPictureLoader = ContactPicture.getContactPictureLoader(getActivity());
         }

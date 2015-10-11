@@ -555,4 +555,6 @@ public class LocalMessage extends MimeMessage {
     public boolean isBodyMissing() {
         return getBody() == null;
     }
+
+
 }
